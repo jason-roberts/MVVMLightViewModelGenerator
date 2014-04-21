@@ -32,16 +32,17 @@ namespace SampleWpfApplication.ViewModel
                         Set(ref _who, value);
                     }
                 }
-        protected void InitCommands()
-        {          
-            _loadCommand = new RelayCommand(ExecuteLoad, CanExecuteLoad);
-        }
+
 
         private RelayCommand _loadCommand;
         public virtual RelayCommand LoadCommand
         {
             get
             {
+				if (_loadCommand == null)
+				{
+					_loadCommand = new RelayCommand(ExecuteLoad, CanExecuteLoad);
+				}
                 return _loadCommand;
             }
         }
@@ -70,17 +71,17 @@ namespace SampleWpfApplication.ViewModel
                         Set(ref _someproperty, value);
                     }
                 }
-        protected void InitCommands()
-        {          
-            _aCommand = new RelayCommand(ExecuteA, CanExecuteA);
-            _bCommand = new RelayCommand(ExecuteB, CanExecuteB);
-        }
+
 
         private RelayCommand _aCommand;
         public virtual RelayCommand ACommand
         {
             get
             {
+				if (_aCommand == null)
+				{
+					_aCommand = new RelayCommand(ExecuteA, CanExecuteA);
+				}
                 return _aCommand;
             }
         }
@@ -93,6 +94,10 @@ namespace SampleWpfApplication.ViewModel
         {
             get
             {
+				if (_bCommand == null)
+				{
+					_bCommand = new RelayCommand(ExecuteB, CanExecuteB);
+				}
                 return _bCommand;
             }
         }

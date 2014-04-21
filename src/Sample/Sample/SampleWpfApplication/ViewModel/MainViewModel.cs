@@ -4,11 +4,6 @@ namespace SampleWpfApplication.ViewModel
 {
     class MainViewModel : MainViewModelBase
     {
-        public MainViewModel()
-        {
-            InitCommands();
-        }
-
         protected override void ExecuteLoad()
         {
             Who = new Person {Name="Jason"};

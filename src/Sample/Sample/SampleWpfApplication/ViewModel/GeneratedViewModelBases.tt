@@ -61,17 +61,7 @@ namespace <#=ViewModelGeneratorSettings.OutputNameSpace #>
 <#
 }
 #>
-        protected void InitCommands()
-        {          
-<# foreach  (var c in vm.Commands)
-        {
-            var priv= "_" + c.ToLower();
-#>
-            <#= priv#>Command = new RelayCommand(Execute<#= c#>, CanExecute<#= c#>);
-<#
-}
-#>
-        }
+
 <#        foreach  (var c in vm.Commands)
 {
             var priv= "_" + c.ToLower();
@@ -82,6 +72,10 @@ namespace <#=ViewModelGeneratorSettings.OutputNameSpace #>
         {
             get
             {
+				if (<#= priv#>Command == null)
+				{
+					<#= priv#>Command = new RelayCommand(Execute<#= c#>, CanExecute<#= c#>);
+				}
                 return <#= priv#>Command;
             }
         }
