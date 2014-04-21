@@ -1,0 +1,14 @@
+﻿:Usings
+SampleWpfApplication.Model
+
+:OutputNamespace
+SampleWpfApplication.ViewModel
+
+#MainViewModel
+p Who Person
+p C int
+c Load
+c Save
+
+#AnotherViewModel
+p SomeProperty int

@@ -1,14 +1,17 @@
 ﻿
 
 using System;
+using System.IO;
 using System.Collections.ObjectModel;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 
 
+
+
+
+
 using SampleWpfApplication.Model;
-
-
 
 namespace SampleWpfApplication.ViewModel
 {
@@ -32,6 +35,24 @@ namespace SampleWpfApplication.ViewModel
                         Set(ref _who, value);
                     }
                 }
+                public const string CPropertyName = "C";
+                protected  int _c;
+
+                public  int C
+                {
+                    get
+                    {
+                        return _c;
+                    }
+                    set
+                    {
+                        if (_c == value)
+                        {
+                            return;
+                        }
+                        Set(ref _c, value);
+                    }
+                }
 
 
         private RelayCommand _loadCommand;
@@ -49,6 +70,22 @@ namespace SampleWpfApplication.ViewModel
 
         protected virtual void ExecuteLoad() {}
         protected virtual bool CanExecuteLoad() { return true;}
+
+        private RelayCommand _saveCommand;
+        public virtual RelayCommand SaveCommand
+        {
+            get
+            {
+				if (_saveCommand == null)
+				{
+					_saveCommand = new RelayCommand(ExecuteSave, CanExecuteSave);
+				}
+                return _saveCommand;
+            }
+        }
+
+        protected virtual void ExecuteSave() {}
+        protected virtual bool CanExecuteSave() { return true;}
     }
 
     public abstract class AnotherViewModelBase :  ViewModelBase
@@ -72,38 +109,6 @@ namespace SampleWpfApplication.ViewModel
                     }
                 }
 
-
-        private RelayCommand _aCommand;
-        public virtual RelayCommand ACommand
-        {
-            get
-            {
-				if (_aCommand == null)
-				{
-					_aCommand = new RelayCommand(ExecuteA, CanExecuteA);
-				}
-                return _aCommand;
-            }
-        }
-
-        protected virtual void ExecuteA() {}
-        protected virtual bool CanExecuteA() { return true;}
-
-        private RelayCommand _bCommand;
-        public virtual RelayCommand BCommand
-        {
-            get
-            {
-				if (_bCommand == null)
-				{
-					_bCommand = new RelayCommand(ExecuteB, CanExecuteB);
-				}
-                return _bCommand;
-            }
-        }
-
-        protected virtual void ExecuteB() {}
-        protected virtual bool CanExecuteB() { return true;}
     }
 
 }

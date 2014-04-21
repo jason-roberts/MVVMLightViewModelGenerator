@@ -1,0 +1,233 @@
+﻿<#@ template debug="false" hostspecific="true" language="C#" #>
+<#@ assembly name="System" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Linq" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Linq" #>
+<#@ output extension=".cs" #>
+
+<#
+
+// HOW TO USE
+
+// Define your VMs in ViewModelDefinitions.txt
+
+// Derive from the auto-generated base classes to create your own VMs
+
+#>
+
+using System;
+using System.IO;
+using System.Collections.ObjectModel;
+using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Command;
+
+
+
+
+
+<#
+    ViewModelGeneratorSettings.ParseDefinitions(this.Host.ResolvePath("ViewModelDefinitions.txt"));
+#>
+
+<# foreach (var s in ViewModelGeneratorSettings.OutputUsings)
+    { #>
+using <#=s#>;
+
+<#    } #>
+namespace <#=ViewModelGeneratorSettings.OutputNameSpace #>
+{
+<# foreach (var vm in ViewModelGeneratorSettings.ViewModelDefinitions)
+{ #>
+    public abstract class <#=  vm.Name #>Base :  ViewModelBase
+    {
+<#        foreach  (var p in vm.Properties)
+{
+            var typ = p.Item2;
+            var name = p.Item1;
+            var priv=name.ToLower();
+#>
+                public const string <#= name#>PropertyName = "<#= name#>";
+                protected  <#= typ#> _<#= priv#>;
+
+                public  <#= typ#> <#= name#>
+                {
+                    get
+                    {
+                        return _<#= priv#>;
+                    }
+                    set
+                    {
+                        if (_<#= priv#> == value)
+                        {
+                            return;
+                        }
+                        Set(ref _<#= priv#>, value);
+                    }
+                }
+<#
+}
+#>
+
+<#        foreach  (var c in vm.Commands)
+{
+            var priv= "_" + c.ToLower();
+#>
+
+        private RelayCommand <#= priv#>Command;
+        public virtual RelayCommand <#= c#>Command
+        {
+            get
+            {
+				if (<#= priv#>Command == null)
+				{
+					<#= priv#>Command = new RelayCommand(Execute<#= c#>, CanExecute<#= c#>);
+				}
+                return <#= priv#>Command;
+            }
+        }
+
+        protected virtual void Execute<#= c#>() {}
+        protected virtual bool CanExecute<#= c#>() { return true;}
+<#
+}
+#>
+    }
+
+<#
+}
+#>
+}
+
+
+
+<#+
+
+    public  static class ViewModelGeneratorSettings
+    {   
+        const string DefFilePath = "ViewModelDefinitions.txt";	        
+
+		public static void ParseDefinitions(string fullDefFilePath)
+		{
+            OutputNameSpace = null;
+            OutputUsings = new List<string>();
+            ViewModelDefinitions = new List<ViewModelDefinition>();
+
+           var allFileLines = System.IO.File.ReadAllLines(fullDefFilePath);
+
+            var lines = allFileLines.Where(l => !string.IsNullOrWhiteSpace(l)).ToArray();
+
+
+            // Set output ns
+            var outputNsIndex = Array.FindIndex(lines, row => row.ToLowerInvariant().StartsWith(":outputnamespace"))+1;
+            OutputNameSpace = lines[outputNsIndex];
+
+
+            // set output usings
+           var outputUsingsIndex = Array.FindIndex(lines, row => row.ToLowerInvariant().StartsWith(":usings"))+1;            
+
+            int i = outputUsingsIndex;
+            var currentLine= lines[i];
+            while (! currentLine.StartsWith(":"))
+            {                
+                OutputUsings.Add(currentLine);
+                i++;
+                currentLine = lines[i];
+            }
+
+
+
+            // parse vm defs
+            var vmDefStartLines = lines.Select((l, row) => new { line = l, index = row })
+                .Where(l => l.line.StartsWith("#"))
+                .Select(x => x.index);
+
+
+
+            foreach (int vmDefStartIndex in vmDefStartLines)
+            {
+                var temp = new ViewModelDefinition();
+
+                temp.Name = lines[vmDefStartIndex].Replace("#","");
+
+                i=vmDefStartIndex+1;
+                currentLine= lines[i];
+
+                while (currentLine != null && !currentLine.StartsWith("#"))
+                {           
+     
+
+                    if (currentLine.StartsWith("p"))
+                    {
+                        var propName=currentLine.Split(' ')[1];
+                        var propType=currentLine.Split(' ')[2];
+
+                        temp.Properties.Add(Tuple.Create(propName, propType));
+                    }
+
+
+                    if (currentLine.StartsWith("c"))
+                    {
+                        var cmdName=currentLine.Split(' ')[1];                        
+
+                        temp.Commands.Add(cmdName);
+                    }
+
+
+                    
+                    i++;
+                    if (i < lines.Length)
+                    {
+                        currentLine = lines[i];
+                    }
+                    else
+                    {   
+                        currentLine = null;
+                    }
+                }
+
+                ViewModelDefinitions.Add(temp);
+            }
+
+
+
+
+
+		}
+
+
+        public static string OutputNameSpace
+		{
+			get;
+			set;			
+		}
+
+
+        public static List<string> OutputUsings
+		{
+			get;
+			set;			
+		}
+
+        public static List<ViewModelDefinition> ViewModelDefinitions
+        {
+            get;
+            set;
+        }
+
+
+        public sealed class ViewModelDefinition
+        {
+            public ViewModelDefinition()
+            {
+                Name = "Unknown";
+                Properties = new List<Tuple<string, string>>();
+                Commands = new List<string>();
+            }
+            public string Name { get; set; }
+            public List<Tuple<string, string>> Properties { get; set; }
+            public List<string>  Commands { get; set; }
+
+        }
+    }
+ #>
